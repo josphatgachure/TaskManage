@@ -22,6 +22,25 @@ def get_all_tasks(connection):
 
     return response
 
+    #getting one task
+
+def get_task_by_id(connection, task_id):
+    cursor = connection.cursor()
+    query = ("SELECT task_id, title, description, due_date, status FROM Task WHERE task_id = %s")
+    cursor.execute(query, (task_id,))
+    task = cursor.fetchone()
+    if task:
+        return {
+            'task_id': task[0],
+            'title': task[1],
+            'description': task[2],
+            'due_date': task[3].strftime('%Y-%m-%d'),  # Convert date object to string
+            'status': task[4]
+        }
+    else:
+        return None
+
+
 #Inserting new tasks
 
 def insert_new_task(connection, task):
@@ -54,6 +73,3 @@ if __name__ == "__main__":
     connection = get_Sql_connection()  # Function available for connecting with the database
     print(get_all_tasks(connection))
     
-   #Update the status of a task manually.
-
-  
