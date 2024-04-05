@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from sql_connection import get_Sql_connection
 import connect_db
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
+
 
 connection = get_Sql_connection()
 
@@ -12,6 +15,15 @@ def get_tasks():
     response = jsonify(tasks)
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
+
+#get one task
+@app.route('/gettasks/<int:task_id>', methods=['GET'])
+def get_task_by_id(task_id):
+    task = connect_db.get_task_by_id(connection, task_id)
+    if task is None:
+        return jsonify({'error': 'Task not found'}), 404
+    else:
+        return jsonify(task)
 
 @app.route('/addtask', methods=['POST'])
 def add_task():
