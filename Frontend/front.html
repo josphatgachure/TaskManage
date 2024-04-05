@@ -1,1 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Task Manager</h1>
 
+        <!-- Dashboard -->
+        <div id="dashboard" class="row mb-4"></div>
+
+        <!-- Add Task Form -->
+        <div id="addTaskForm" class="mb-4">
+            <h2>Add New Task</h2>
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" class="form-control" id="title" placeholder="Title">
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea class="form-control" id="description" placeholder="Description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="dueDate">Due Date</label>
+                <input type="date" class="form-control" id="dueDate">
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select class="form-control" id="status">
+                    <option value="Incomplete">Incomplete</option>
+                    <option value="Complete">Complete</option>
+                    <option value="In Progress">In Progress</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="addTask()">Submit</button>
+        </div>
+
+        <!-- Task Details -->
+        <div id="taskDetails" class="mb-4"></div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- Custom JS -->
+    <script >
+        function getTasks() {
+    fetch('/gettasks')
+    .then(response => response.json())
+    .then(tasks => {
+        let dashboard = document.getElementById('dashboard');
+        dashboard.innerHTML = ''; // Clear previous content
+
+        tasks.forEach(task => {
+            let taskDiv = document.createElement('div');
+            taskDiv.innerHTML = `
+                <div>
+                    <h3>${task.title}</h3>
+                    <p>${task.description}</p>
+                    <p>Due Date: ${task.due_date}</p>
+                    <p>Status: ${task.status}</p>
+                    <button onclick="viewTaskDetails(${task.task_id})">View Details</button>
+                </div>
+            `;
+            dashboard.appendChild(taskDiv);
+        });
+    });
+}
+
+// Function to add a new task
+function addTask() {
+    let title = document.getElementById('title').value;
+    let description = document.getElementById('description').value;
+    let dueDate = document.getElementById('dueDate').value;
+    let status = document.getElementById('status').value;
+
+    fetch('/addtask', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            title: title,
+            description: description,
+            due_date: dueDate,
+            status: status
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        getTasks(); // Refresh dashboard after adding new task
+    });
+}
+
+// Function to view task details
+function viewTaskDetails(taskId) {
+    fetch(`/gettasks/${taskId}`)
+    .then(response => response.json())
+    .then(task => {
+        let taskDetails = document.getElementById('taskDetails');
+        taskDetails.innerHTML = `
+            <div>
+                <h2>${task.title}</h2>
+                <p>${task.description}</p>
+                <p>Due Date: ${task.due_date}</p>
+                <p>Status: ${task.status}</p>
+                <button onclick="updateTaskStatus(${task.task_id}, 'Complete')">Mark as Complete</button>
+                <button onclick="updateTaskStatus(${task.task_id}, 'In Progress')">Mark as In Progress</button>
+            </div>
+        `;
+    });
+}
+
+// Function to update task status
+function updateTaskStatus(taskId, newStatus) {
+    fetch(`/updatetask/${taskId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        viewTaskDetails(taskId); // Refresh task details after updating status
+        getTasks(); // Refresh dashboard after updating status
+    });
+}
+
+// Initial load - Fetch tasks when the page loads
+getTasks();
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Task Manager</h1>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="row mb-4"></div>
+
+        <!-- Add Task Form -->
+        <div id="addTaskForm" class="mb-4">
+            <h2>Add New Task</h2>
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" class="form-control" id="title" placeholder="Title">
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea class="form-control" id="description" placeholder="Description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="dueDate">Due Date</label>
+                <input type="date" class="form-control" id="dueDate">
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select class="form-control" id="status">
+                    <option value="Incomplete">Incomplete</option>
+                    <option value="Complete">Complete</option>
+                    <option value="In Progress">In Progress</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="submitButton">Submit</button>
+        </div>
+
+        <!-- Task Details -->
+        <div id="taskDetails" class="mb-4"></div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Custom JS -->
+    <script src="front.js">
+        
+    </script>
+</body>
+</html>
