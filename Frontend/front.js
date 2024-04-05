@@ -1,28 +1,31 @@
 $(document).ready(function() {
-    // Custom JavaScript functions here
-
+    
+     
     // Function to get tasks
     function getTasks() {
-        fetch('/gettasks')
-        .then(response => response.json())
-        .then(tasks => {
+        fetch('http://127.0.0.1:5000/gettasks')
+        .then(response => response.clone().json())
+        .then(tasks => { 
             let dashboard = document.getElementById('dashboard');
             dashboard.innerHTML = ''; // Clear previous content
 
             tasks.forEach(task => {
                 let taskDiv = document.createElement('div');
                 taskDiv.innerHTML = `
-                    <div>
+                    <div class=" border gap-3 px-2  ">
                         <h3>${task.title}</h3>
                         <p>${task.description}</p>
                         <p>Due Date: ${task.due_date}</p>
                         <p>Status: ${task.status}</p>
-                        <button onclick="viewTaskDetails(${task.task_id})">View Details</button>
+                            <button onclick="${viewTaskDetails(task.task_id)}">View Details</button>
                     </div>
                 `;
                 dashboard.appendChild(taskDiv);
             });
-        });
+        })
+        .catch(error => console.error('Error fetching tasks amos:', error))
+        ;
+
     }
 
     // Function to add a new task
@@ -32,7 +35,7 @@ $(document).ready(function() {
             let dueDate = document.getElementById('dueDate').value;
             let status = document.getElementById('status').value;
 
-            fetch('/addtask', {
+            fetch('http://127.0.0.1:5000/addtask', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -48,15 +51,21 @@ $(document).ready(function() {
             .then(data => {
                 console.log(data);
                 getTasks(); // Refresh dashboard after adding new task
+
+                //clear on submit
+                document.getElementById('title').value = '';
+                document.getElementById('description').value = '';
+                document.getElementById('dueDate').value = '';
+                document.getElementById('status').value = 'Incomplete';
             });
     }
 
     // Function to view task details
     function viewTaskDetails(taskId) {
-        fetch(`/gettasks/${taskId}`)
+        fetch(`http://127.0.0.1:5000/gettasks/${taskId}`)
         .then(response => response.json())
         .then(task => {
-            let taskDetails = document.getElementById('taskDetails');
+           /* let taskDetails = document.getElementById('taskDetails');
             taskDetails.innerHTML = `
                 <div>
                     <h2>${task.title}</h2>
@@ -66,7 +75,11 @@ $(document).ready(function() {
                     <button onclick="updateTaskStatus(${task.task_id}, 'Complete')">Mark as Complete</button>
                     <button onclick="updateTaskStatus(${task.task_id}, 'In Progress')">Mark as In Progress</button>
                 </div>
-            `;
+            `;*/
+            document.getElementById('taskTitle').innerText = task.title;
+            document.getElementById('taskDescription').innerText = task.description;
+            document.getElementById('taskDueDate').innerText = task.due_date;
+            document.getElementById('taskStatus').innerText = task.status;
         });
     }
 
@@ -96,4 +109,5 @@ $(document).ready(function() {
     $('#submitButton').click(function() {
         addTask();
     });
+
 });
